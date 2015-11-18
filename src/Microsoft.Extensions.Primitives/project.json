@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rc1-final",
   "description": "ASP.NET 5 primitives.",
   "repository": {
     "type": "git",
@@ -12,22 +12,22 @@
   "dependencies": {
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
-      "version": "1.0.0-*"
+      "version": "1.0.0-rc1-final"
     }
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcore50": {
       "dependencies": {
-        "System.Resources.ResourceManager": "4.0.0",
-        "System.Runtime": "4.0.20",
-        "System.Threading": "4.0.10"
+        "System.Resources.ResourceManager": "4.0.1-beta-23516",
+        "System.Runtime": "4.0.21-beta-23516",
+        "System.Threading": "4.0.11-beta-23516"
       }
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Runtime": "4.0.21-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
+        "System.Runtime": "4.0.21-beta-23516",
+        "System.Resources.ResourceManager": "4.0.1-beta-23516"
       }
     }
   }

@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rc1-final",
   "shared": "*.cs",
   "dependencies": {},
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
       "dependencies": {
-        "System.Runtime": "4.0.21-beta-*"
+        "System.Runtime": "4.0.21-beta-23516"
       }
     }
   }
