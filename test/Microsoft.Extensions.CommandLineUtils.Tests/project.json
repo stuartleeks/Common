@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "compilationOptions": {
@@ -8,20 +9,19 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8",
+    "netstandardapp1.5": {
+      "imports": [ "dnxcore50", "portable-net451+win8" ],
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "NETStandard.Library": "1.0.0-*",
+        "runtime.win7.System.IO.Compression": "4.1.0-*",
+        "runtime.any.System.Linq.Expressions": "4.0.10-*"
       }
     },
-    "net451": {
+    "net46": {
       "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Threading.Tasks": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
       }
     }
   }
