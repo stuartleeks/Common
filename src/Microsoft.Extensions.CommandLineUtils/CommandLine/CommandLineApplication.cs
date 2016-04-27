@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public string Description { get; set; }
         public readonly List<CommandOption> Options;
         public CommandOption OptionHelp { get; private set; }
+        public CommandOption OptionHelpJson { get; private set; }
         public CommandOption OptionVersion { get; private set; }
         public readonly List<CommandArgument> Arguments;
         public readonly List<string> RemainingArguments;
@@ -134,6 +135,11 @@ namespace Microsoft.Extensions.CommandLineUtils
                         if (command.OptionHelp == option)
                         {
                             command.ShowHelp();
+                            return 0;
+                        }
+                        else if (command.OptionHelpJson == option)
+                        {
+                            command.ShowHelpJson();
                             return 0;
                         }
                         else if (command.OptionVersion == option)
@@ -269,6 +275,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             // Help option is special because we stop parsing once we see it
             // So we store it separately for further use
             OptionHelp = Option(template, "Show help information", CommandOptionType.NoValue);
+            OptionHelpJson = Option("--helpjson", "Get help metadata", CommandOptionType.NoValue);
 
             return OptionHelp;
         }
@@ -369,7 +376,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 optionsBuilder.AppendLine("Options:");
                 var maxOptLen = MaxOptionTemplateLength(target.Options);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxOptLen + 2);
-                foreach (var opt in target.Options)
+                foreach (var opt in target.Options.Where(o => o != OptionHelpJson)) // suppress the helpjson option
                 {
                     optionsBuilder.AppendFormat(outputFormat, opt.Template, opt.Description);
                     optionsBuilder.AppendLine();
@@ -406,6 +413,92 @@ namespace Microsoft.Extensions.CommandLineUtils
 
             Console.Write("{0}{1}{2}{3}{4}", nameAndVersion, headerBuilder, argumentsBuilder, optionsBuilder, commandsBuilder);
         }
+
+        // Show full help as json
+        public void ShowHelpJson(string commandName = null)
+        {
+            var headerBuilder = new StringBuilder("Usage:");
+            for (var cmd = this; cmd != null; cmd = cmd.Parent)
+            {
+                cmd.IsShowingInformation = true;
+                headerBuilder.Insert(6, string.Format(" {0}", cmd.Name));
+            }
+
+            CommandLineApplication target;
+
+            if (commandName == null || string.Equals(Name, commandName, StringComparison.OrdinalIgnoreCase))
+            {
+                target = this;
+            }
+            else
+            {
+                target = Commands.SingleOrDefault(cmd => string.Equals(cmd.Name, commandName, StringComparison.OrdinalIgnoreCase));
+
+                if (target != null)
+                {
+                    headerBuilder.AppendFormat(" {0}", commandName);
+                }
+                else
+                {
+                    // The command name is invalid so don't try to show help for something that doesn't exist
+                    target = this;
+                }
+
+            }
+
+            // This would be cleaner with JSON.NET rather than manually constructing JSON
+            // Can impose that dependency from here?
+            var outputBuilder = new StringBuilder("{");
+            outputBuilder.AppendLine();
+            outputBuilder.Append("\t\"arguments\": [");
+            outputBuilder.AppendLine();
+            if (target.Arguments.Any())
+            {
+                var separator = "";
+                foreach (var arg in target.Arguments)
+                {
+                    outputBuilder.AppendFormat("\t\t{0}{{\"name\":\"{1}\", \"description\":\"{2}\"}}", separator, arg.Name, arg.Description);
+                    outputBuilder.AppendLine();
+                    separator = ",";
+                }
+            }
+            outputBuilder.Append("\t],");
+            outputBuilder.AppendLine();
+            outputBuilder.Append("\t\"options\": [");
+            outputBuilder.AppendLine();
+
+            if (target.Options.Any())
+            {
+                var separator = "";
+                foreach (var opt in target.Options.Where(o => o != OptionHelpJson)) // suppress the helpjson option
+                {
+                    outputBuilder.AppendFormat("\t\t{0}{{\"short\":\"{1}\", \"long\":\"{2}\", \"description\": \"{3}\", \"optionType\": \"{4}\"}}", separator, opt.ShortName, opt.LongName, opt.Description, opt.OptionType);
+                    outputBuilder.AppendLine();
+                    separator = ",";
+                }
+            }
+            outputBuilder.Append("\t],");
+            outputBuilder.AppendLine();
+            outputBuilder.Append("\t\"commands\": [");
+            outputBuilder.AppendLine();
+
+            if (target.Commands.Any())
+            {
+                var separator = "";
+                foreach (var cmd in target.Commands.OrderBy(c => c.Name))
+                {
+                    outputBuilder.AppendFormat("\t\t{0}{{\"name\":\"{1}\", \"description\":\"{2}\"}}", separator, cmd.Name, cmd.Description);
+                    separator = ",";
+                }
+            }
+
+            outputBuilder.Append("\t]");
+            outputBuilder.AppendLine();
+            outputBuilder.Append("}");
+
+            Console.Write(outputBuilder);
+        }
+
 
         public void ShowVersion()
         {
